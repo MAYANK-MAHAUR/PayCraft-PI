@@ -180,6 +180,7 @@ router.post('/google', authLimiter, async (req, res, next) => {
         walletBalance: parseInt(merchant.wallet_balance || 100000, 10),
         avatarUrl: merchant.avatar_url || picture,
         createdAt: merchant.created_at,
+      },
     });
   } catch (err) {
     next(err);
