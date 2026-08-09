@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
 import GoogleLoginButton from '../components/GoogleLoginButton';
-import { ArrowRight, Lock, Mail } from 'lucide-react';
+import { ArrowRight, Lock, Mail, UserCheck } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -26,6 +26,20 @@ export default function Login() {
     navigate(targetUrl);
   };
 
+  const handleGuestLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/guest');
+      login(res.data.token, res.data.merchant);
+      handlePostAuthNavigate();
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Could not create guest session.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -45,7 +59,7 @@ export default function Login() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.7rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-main)' }}>PayCraft PI Network</h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px' }}>Sign in to manage your PI payments & balance</p>
         </div>
@@ -55,6 +69,30 @@ export default function Login() {
             {error}
           </div>
         )}
+
+        {/* One-Click Guest / Judge Sign In */}
+        <div style={{ marginBottom: '14px' }}>
+          <button
+            type="button"
+            onClick={handleGuestLogin}
+            className="btn btn-secondary"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              background: 'rgba(34,197,94,0.14)',
+              border: '1px solid rgba(34,197,94,0.4)',
+              color: 'var(--accent-emerald)',
+            }}
+          >
+            <UserCheck size={18} /> Continue as Guest / Demo Judge
+          </button>
+        </div>
 
         {/* Google OAuth Login Button */}
         <div style={{ marginBottom: '20px' }}>

@@ -180,6 +180,53 @@ router.post('/google', authLimiter, async (req, res, next) => {
         walletBalance: parseInt(merchant.wallet_balance || 100000, 10),
         avatarUrl: merchant.avatar_url || picture,
         createdAt: merchant.created_at,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Guest / Judge One-Click Demo Sign-In
+router.post('/guest', authLimiter, async (req, res, next) => {
+  try {
+    const randomId = Math.floor(1000 + Math.random() * 9000);
+    const guestEmail = `guest_${Date.now()}_${randomId}@paycraft.app`;
+    const guestName = `Guest Judge #${randomId}`;
+    const candidatePiHandle = `guest.judge${randomId}@paycraft`;
+    const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(guestEmail)}`;
+
+    const result = await db.query(
+      `INSERT INTO merchants (email, business_name, full_name, pi_handle, wallet_balance, avatar_url)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, email, business_name, full_name, pi_handle, wallet_balance, avatar_url, created_at`,
+      [guestEmail, guestName, guestName, candidatePiHandle, 100000, defaultAvatar]
+    );
+
+    const merchant = result.rows[0];
+
+    // Automatically generate test & live API keys
+    const testKey = await KeyService.createKey(merchant.id, 'test', 'Default Test Key');
+    const liveKey = await KeyService.createKey(merchant.id, 'live', 'Default Live Key');
+
+    const token = generateToken(merchant.id);
+
+    res.status(201).json({
+      message: 'Guest session created successfully',
+      token,
+      merchant: {
+        id: merchant.id,
+        email: merchant.email,
+        businessName: merchant.business_name,
+        fullName: merchant.full_name,
+        piHandle: merchant.pi_handle,
+        walletBalance: parseInt(merchant.wallet_balance || 100000, 10),
+        avatarUrl: merchant.avatar_url,
+        createdAt: merchant.created_at,
+        isGuest: true,
+      },
+      keys: {
+        testApiKey: testKey.apiKey,
+        liveApiKey: liveKey.apiKey,
       },
     });
   } catch (err) {

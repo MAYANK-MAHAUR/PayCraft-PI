@@ -1,13 +1,31 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Zap, Cpu, Server, QrCode, Play, X, HelpCircle, Sparkles, CheckCircle2, Video } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, ShieldCheck, Zap, Cpu, Server, QrCode, Play, X, HelpCircle, Sparkles, CheckCircle2, Video, UserCheck } from 'lucide-react';
 import QRCode from '../components/QRCode';
+import { useAuth } from '../hooks/useAuth';
+import api from '../api/client';
 
 export default function Landing() {
   const rootRef = useRef(null);
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [isDark, setIsDark] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
+
+  const handleGuestLogin = async () => {
+    setGuestLoading(true);
+    try {
+      const res = await api.post('/auth/guest');
+      login(res.data.token, res.data.merchant);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Guest login failed:', err);
+    } finally {
+      setGuestLoading(false);
+    }
+  };
 
   // First visit check: open the tutorial popup.
   useEffect(() => {
@@ -184,6 +202,9 @@ export default function Landing() {
       }}>
         <span style={{ fontSize: '1.3rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--pc-green)' }}>PayCraft</span>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button type="button" onClick={handleGuestLogin} disabled={guestLoading} className="btn pc-btn btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <UserCheck size={14} /> Guest Demo
+          </button>
           <button type="button" className="pc-theme-btn" onClick={() => setShowTutorialModal(true)}>
             <HelpCircle size={14} /> Tutorial Guide
           </button>
@@ -192,7 +213,6 @@ export default function Landing() {
           </button>
           <Link to="/docs" className="btn btn-secondary btn-sm">API Docs</Link>
           <Link to="/login" className="btn btn-secondary btn-sm">Sign In</Link>
-          <Link to="/register" className="btn pc-btn btn-sm">Get Started <ArrowRight size={14} /></Link>
         </div>
       </header>
 
@@ -203,7 +223,10 @@ export default function Landing() {
         <p className="pc-sub">Accept payments, manage dual-mode API keys, deliver webhooks with retries, and track transactions in real time powered by 6 native services on Zerops.</p>
         
         <div className="pc-cta" style={{ marginBottom: 30 }}>
-          <Link to="/register" className="btn pc-btn btn-lg">Create Free Account <ArrowRight size={18} /></Link>
+          <button type="button" onClick={handleGuestLogin} disabled={guestLoading} className="btn pc-btn btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <UserCheck size={18} /> Continue as Guest / Demo Judge <ArrowRight size={18} />
+          </button>
+          <Link to="/register" className="btn btn-secondary btn-lg">Create Account</Link>
           <button type="button" onClick={() => setShowTutorialModal(true)} className="btn btn-secondary btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             <HelpCircle size={18} /> How to Test
           </button>
@@ -366,11 +389,11 @@ export default function Landing() {
             </div>
 
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+              <button type="button" onClick={() => { closeTutorial(); handleGuestLogin(); }} disabled={guestLoading} className="btn pc-btn" style={{ fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <UserCheck size={16} /> Continue as Guest / Judge <ArrowRight size={16} />
+              </button>
               <button type="button" onClick={() => { closeTutorial(); setShowVideoModal(true); }} className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <Video size={16} /> Watch Demo Video
-              </button>
-              <button type="button" onClick={closeTutorial} className="btn pc-btn" style={{ fontWeight: 700 }}>
-                Got it, let's explore! <ArrowRight size={16} />
               </button>
             </div>
           </div>

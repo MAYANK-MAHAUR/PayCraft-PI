@@ -3,7 +3,7 @@ import { useSearchParams, Link, useNavigate, useLocation } from 'react-router-do
 import api from '../api/client';
 import PaymentSuccessOverlay from '../components/PaymentSuccessOverlay';
 import { useAuth } from '../hooks/useAuth';
-import { Smartphone, QrCode, Send, CheckCircle2, Lock, ArrowLeft } from 'lucide-react';
+import { Smartphone, QrCode, Send, CheckCircle2, Lock, ArrowLeft, UserCheck } from 'lucide-react';
 
 const formatUSD = (cents) =>
   '$' + (Number(cents) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -12,7 +12,20 @@ export default function PayScreen() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { token, merchant } = useAuth();
+  const { token, merchant, login } = useAuth();
+
+  const handleGuestPay = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await api.post('/auth/guest');
+      login(res.data.token, res.data.merchant);
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Guest sign in failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const cs = params.get('cs'); // checkout session id
   const pa = params.get('pa'); // merchant PI handle
@@ -144,9 +157,30 @@ export default function PayScreen() {
             </div>
             <h3 style={{ margin: '0 0 8px', fontSize: '1.05rem', color: 'var(--text-main)' }}>Sign in to pay</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '18px' }}>
-              Log in with your PayCraft account to send paper-money from your wallet.
+              Log in with your PayCraft account or continue as Guest to send paper-money from your wallet.
             </p>
-            <Link to={loginRedirectUrl} className="btn btn-primary" style={{ width: '100%' }}>Sign In to Pay</Link>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                type="button"
+                onClick={handleGuestPay}
+                className="btn btn-secondary"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  background: 'rgba(34,197,94,0.14)',
+                  border: '1px solid rgba(34,197,94,0.4)',
+                  color: 'var(--accent-emerald)',
+                }}
+              >
+                <UserCheck size={18} /> Instant Guest Pay ($1,000 Balance)
+              </button>
+              <Link to={loginRedirectUrl} className="btn btn-primary" style={{ width: '100%' }}>Sign In to Pay</Link>
+            </div>
           </div>
         ) : merchantInfo ? (
           <form onSubmit={handlePay}>

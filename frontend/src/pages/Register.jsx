@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
 import GoogleLoginButton from '../components/GoogleLoginButton';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, UserCheck } from 'lucide-react';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -31,6 +31,20 @@ export default function Register() {
       sessionStorage.removeItem('paycraft_pending_pay_target');
     } catch (e) {}
     navigate(targetUrl);
+  };
+
+  const handleGuestLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/guest');
+      login(res.data.token, res.data.merchant);
+      handlePostAuthNavigate();
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Could not create guest session.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -101,6 +115,30 @@ export default function Register() {
             {error}
           </div>
         )}
+
+        {/* One-Click Guest / Judge Sign In */}
+        <div style={{ marginBottom: '14px' }}>
+          <button
+            type="button"
+            onClick={handleGuestLogin}
+            className="btn btn-secondary"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              background: 'rgba(34,197,94,0.14)',
+              border: '1px solid rgba(34,197,94,0.4)',
+              color: 'var(--accent-emerald)',
+            }}
+          >
+            <UserCheck size={18} /> Continue as Guest / Demo Judge
+          </button>
+        </div>
 
         {/* Google OAuth Login Button */}
         <div style={{ marginBottom: '20px' }}>
