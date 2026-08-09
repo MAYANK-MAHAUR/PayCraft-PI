@@ -115,7 +115,7 @@ export function RealtimeProvider({ children }) {
         sub: data.note,
       });
     } else if (type === 'payment.sent') {
-      playSuccessChime();
+      // PaymentSuccessOverlay handles the audio chime synchronized with the green checkmark pop!
       pushToast({
         kind: 'outgoing',
         title: `Sent ${data.formattedAmount || ''} to ${data.toName || data.toHandle || 'recipient'}`,
@@ -123,7 +123,6 @@ export function RealtimeProvider({ children }) {
         sub: data.note,
       });
     } else if (type === 'wallet.topup') {
-      playSuccessChime();
       pushToast({
         kind: 'topup',
         title: `Added ${data.formattedAmount || ''} to PI Wallet`,

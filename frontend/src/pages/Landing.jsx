@@ -8,28 +8,14 @@ export default function Landing() {
   const [isDark, setIsDark] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
-  const [showBootFlicker, setShowBootFlicker] = useState(false);
 
-  // First visit check: play the smooth boot flicker, THEN fade in the tutorial.
+  // First visit check: open the tutorial popup.
   useEffect(() => {
     try {
       const seen = localStorage.getItem('paycraft_tutorial_seen');
-      if (!seen) {
-        const reduceMotion =
-          window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reduceMotion) {
-          setShowTutorialModal(true);
-        } else {
-          setShowBootFlicker(true); // tutorial appears after the flicker finishes
-        }
-      }
+      if (!seen) setShowTutorialModal(true);
     } catch (e) {}
   }, []);
-
-  const handleBootFlickerEnd = () => {
-    setShowBootFlicker(false);
-    setShowTutorialModal(true);
-  };
 
   // Scroll reveal
   useEffect(() => {
@@ -173,27 +159,6 @@ export default function Landing() {
         @keyframes pcScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         @keyframes pcFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* ---------- Boot flicker intro (smooth, slow) ----------
-           Re-added per request: a brief whole-screen green/black flicker on first
-           visit that eases (not hard-steps) and fades out, then the tutorial popup
-           appears. Isolated to an overlay so it never fights the page content. */
-        .pc-boot-flicker {
-          position: fixed; inset: 0; z-index: 2000; pointer-events: none;
-          background: #0B0B0B; animation: pcBootFlicker 2.4s ease-in-out forwards;
-        }
-        @keyframes pcBootFlicker {
-          0%   { opacity: 1; background: #0B0B0B; }
-          18%  { opacity: 1; background: #0B0B0B; }
-          30%  { opacity: .85; background: #22C55E; }
-          44%  { opacity: .9;  background: #0B0B0B; }
-          58%  { opacity: .7;  background: #22C55E; }
-          72%  { opacity: .55; background: #0B0B0B; }
-          86%  { opacity: .3;  background: #0B0B0B; }
-          100% { opacity: 0; background: #0B0B0B; }
-        }
-        @media (prefers-reduced-motion: reduce){
-          .pc-boot-flicker { display: none; }
-        }
 
         @media (max-width:880px){
           .pc-feat-grid { grid-template-columns:1fr; }
@@ -338,12 +303,6 @@ export default function Landing() {
           </button>
         </div>
       </footer>
-
-      {/* ---------- BOOT FLICKER INTRO (first visit, smooth + slow) ----------
-          Plays once on first visit, then hands off to the tutorial popup. */}
-      {showBootFlicker && (
-        <div className="pc-boot-flicker" onAnimationEnd={handleBootFlickerEnd} aria-hidden="true" />
-      )}
 
       {/* ---------- EXPANDED VIDEO MODAL ---------- */}
       {showVideoModal && (

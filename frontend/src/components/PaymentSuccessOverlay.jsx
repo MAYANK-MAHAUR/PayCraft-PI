@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
+import { playSuccessChime } from '../utils/sound';
 
-const MIN_PROCESSING_MS = 1400;
+const MIN_PROCESSING_MS = 200; // Snappy 200ms minimum wait so chime & checkmark pop together
 
 export default function PaymentSuccessOverlay({ isProcessing = false, data = null, onClose }) {
   const [phase, setPhase] = useState('processing');
@@ -11,43 +13,51 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
   const minTimer = useRef(null);
   const [winSize, setWinSize] = useState({ w: window.innerWidth, h: window.innerHeight });
 
+  // Store persistent copy of data so exit animations never render null/blank data
+  const dataRef = useRef(data);
+  if (data) {
+    dataRef.current = data;
+  }
+  const activeData = data || dataRef.current;
+
   // Minimum processing display time.
   useEffect(() => {
     minTimer.current = setTimeout(() => setMinTimePassed(true), MIN_PROCESSING_MS);
     const onResize = () => setWinSize({ w: window.innerWidth, h: window.innerHeight });
     window.addEventListener('resize', onResize);
     return () => {
-      clearTimeout(minTimer.current);
+      if (minTimer.current) clearTimeout(minTimer.current);
       window.removeEventListener('resize', onResize);
     };
   }, []);
 
-  // Transition to success once processing is done AND data is ready AND
-  // the minimum display time has elapsed.
+  // Transition to success once processing is done AND data is ready
   useEffect(() => {
-    if (!isProcessing && data && minTimePassed && phase !== 'success') {
+    if (!isProcessing && activeData && minTimePassed && phase !== 'success') {
       setPhase('success');
     }
-  }, [isProcessing, data, minTimePassed, phase]);
+  }, [isProcessing, activeData, minTimePassed, phase]);
 
-  // Success chime via Web Audio (no asset dependency).
+  // Synchronized success chime via Web Audio when checkmark animates
   useEffect(() => {
-    if (phase !== 'success' || chimePlayed.current) return;
-    chimePlayed.current = true;
-    playSuccessChime();
+    if (phase === 'success' && !chimePlayed.current) {
+      chimePlayed.current = true;
+      playSuccessChime();
+    }
   }, [phase]);
 
-  // Defensive data extraction.
+  // Defensive data extraction
   const formattedAmount =
-    data?.formattedAmount ||
-    (data?.amount != null ? `$${(data.amount / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '');
-  const piRefId = data?.piRefId || data?.id || '';
-  const receiverName = data?.receiver?.name || data?.merchantName || data?.name || 'Merchant';
-  const piHandle = data?.receiver?.piHandle || data?.piHandle || '';
+    activeData?.formattedAmount ||
+    (activeData?.amount != null ? `$${(activeData.amount / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '');
+  const piRefId = activeData?.piRefId || activeData?.id || '';
+  const receiverName = activeData?.receiver?.name || activeData?.merchantName || activeData?.name || 'Merchant';
+  const piHandle = activeData?.receiver?.piHandle || activeData?.piHandle || '';
 
-  return (
+  const overlayJSX = (
     <AnimatePresence>
       <motion.div
+        key="pc-success-backdrop"
         className="pc-overlay-backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -56,12 +66,12 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 9999,
+          zIndex: 99999,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'rgba(11,11,11,0.72)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(11,11,11,0.85)',
+          backdropFilter: 'blur(8px)',
           padding: 20,
         }}
       >
@@ -70,8 +80,8 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
             width={winSize.w}
             height={winSize.h}
             recycle={false}
-            numberOfPieces={320}
-            gravity={0.32}
+            numberOfPieces={280}
+            gravity={0.3}
             colors={['#22C55E', '#16A34A', '#FACC15', '#ffffff']}
           />
         )}
@@ -85,18 +95,18 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
             style={{
               background: '#22C55E',
               borderRadius: 28,
-              padding: '56px 64px',
+              padding: '48px 56px',
               textAlign: 'center',
               color: '#0B0B0B',
               boxShadow: '0 24px 80px rgba(34,197,94,0.45)',
               minWidth: 320,
             }}
           >
-            <div className="pc-pulse-ring" style={{ margin: '0 auto 26px' }}>
+            <div className="pc-pulse-ring" style={{ margin: '0 auto 20px' }}>
               <div className="pc-pulse-dot" />
             </div>
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: 0.2 }}>Processing payment…</div>
-            <div style={{ fontSize: 14, fontWeight: 600, opacity: 0.75, marginTop: 8 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, opacity: 0.75, marginTop: 6 }}>
               Securing your PI transfer
             </div>
           </motion.div>
@@ -106,12 +116,13 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
             initial={{ scale: 0.7, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+            transition={{ type: 'spring', stiffness: 240, damping: 18 }}
+            onClick={(e) => e.stopPropagation()}
             style={{
               position: 'relative',
               background: '#22C55E',
               borderRadius: 32,
-              padding: '64px 56px',
+              padding: '56px 48px',
               textAlign: 'center',
               color: '#0B0B0B',
               boxShadow: '0 30px 100px rgba(34,197,94,0.55)',
@@ -122,27 +133,27 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.12, type: 'spring', stiffness: 260, damping: 14 }}
+              transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 14 }}
               style={{
-                width: 104,
-                height: 104,
+                width: 96,
+                height: 96,
                 borderRadius: '50%',
                 background: '#0B0B0B',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 24px',
+                margin: '0 auto 20px',
               }}
             >
-              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             </motion.div>
 
-            <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.85 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.85 }}>
               Payment Successful
             </div>
-            <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.05, margin: '10px 0 18px', letterSpacing: -1 }}>
+            <div style={{ fontSize: 48, fontWeight: 900, lineHeight: 1.05, margin: '8px 0 16px', letterSpacing: -1 }}>
               {formattedAmount || '$0.00'}
             </div>
 
@@ -174,7 +185,7 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
             <button
               onClick={onClose}
               style={{
-                marginTop: 26,
+                marginTop: 22,
                 width: '100%',
                 border: 'none',
                 borderRadius: 14,
@@ -194,7 +205,7 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
 
       <style>{`
         .pc-pulse-ring {
-          width: 88px; height: 88px; border-radius: 50%;
+          width: 80px; height: 80px; border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
           background: rgba(11,11,11,0.12);
           position: relative;
@@ -206,7 +217,7 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
         }
         .pc-pulse-ring::after { animation-delay: 0.7s; }
         .pc-pulse-dot {
-          width: 34px; height: 34px; border-radius: 50%; background: #0B0B0B;
+          width: 30px; height: 30px; border-radius: 50%; background: #0B0B0B;
           animation: pcBreathe 1.4s ease-in-out infinite;
         }
         @keyframes pcPulse {
@@ -220,4 +231,7 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
       `}</style>
     </AnimatePresence>
   );
+
+  // Portal directly to document.body to prevent backdrop stacking bugs with parent modals
+  return ReactDOM.createPortal(overlayJSX, document.body);
 }
