@@ -1,0 +1,230 @@
+/* ============================================================================
+   PayCraft — Design Token System  ·  "Green / Black / Yellow"
+   ----------------------------------------------------------------------------
+   Single source of truth for the visual language. Consumed by index.css.
+   Structure follows the W3C Design Tokens Community Group (DTCG) mental model:
+   primitive tokens (raw values) -> semantic tokens (intent) -> component usage.
+   Palette: GREEN · BLACK · YELLOW. Dark is the default;
+   [data-theme="light"] overrides the semantic layer.
+   A functional danger/error red (--rose) is kept for error states only.
+   ============================================================================ */
+
+:root,
+[data-theme="dark"] {
+  /* ---- Primitive · Brand ramp (green) ---- */
+  --brand-50:  #ECFDF5;
+  --brand-100: #D1FAE5;
+  --brand-200: #A7F3D0;
+  --brand-300: #6EE7B7;
+  --brand-400: #34D399;
+  --brand-500: #22C55E;   /* signature green */
+  --brand-600: #16A34A;
+  --brand-700: #15803D;
+  --brand-800: #166534;
+  --brand-900: #14532D;
+
+  /* ---- Primitive · Accent hues ---- */
+  --amber-400: #FDE047;   /* yellow */
+  --amber-500: #FACC15;   /* yellow */
+  --amber-600: #EAB308;
+
+  --green-400: #4ADE80;
+  --green-500: #22C55E;   /* green */
+  --green-600: #16A34A;
+
+  --rose-400:  #FB7185;   /* danger (functional only) */
+  --rose-500:  #F43F5E;   /* danger (functional only) */
+
+  /* ---- Primitive · Neutral surface ramp (dark) ---- */
+  --ink-950: #0B0B0B;
+  --ink-900: #111111;
+  --ink-850: #161616;
+  --ink-800: #1C1C1C;
+  --ink-700: #262626;
+  --ink-600: #333333;
+
+  /* ---- Semantic · Brand ---- */
+  --brand-gradient: linear-gradient(135deg, #22C55E 0%, #FACC15 100%);
+  --brand-gradient-soft: linear-gradient(135deg, rgba(34,197,94,0.20), rgba(250,204,21,0.14));
+  --primary:        var(--brand-500);
+  --primary-hover:  var(--brand-400);
+  --primary-light:  var(--brand-300);
+  --primary-glow:   rgba(34, 197, 94, 0.34);
+  --primary-contrast: #0B0B0B;
+  --primary-color:    var(--brand-500); /* explicit alias referenced by components */
+
+  /* ---- Semantic · Backgrounds ---- */
+  --bg-base:       var(--ink-900);
+  --bg-base-2:     var(--ink-850);
+  --surface:       rgba(22, 22, 22, 0.66);
+  --surface-2:     rgba(28, 28, 28, 0.60);
+  --surface-solid: var(--ink-850);
+  --surface-hover: rgba(38, 38, 38, 0.72);
+  --surface-raised: rgba(20, 20, 20, 0.92);
+  --bg-secondary:   var(--ink-850);
+  --bg-tertiary:    var(--ink-800);
+
+  /* ---- Semantic · Borders ---- */
+  --border-subtle: rgba(245, 245, 245, 0.10);
+  --border-strong: rgba(245, 245, 245, 0.20);
+  --border-glow:   rgba(34, 197, 94, 0.45);
+  --border-brand:  rgba(34, 197, 94, 0.40);
+
+  /* ---- Semantic · Text ---- */
+  --text-main:  #F5F5F5;
+  --text-muted: #A3A3A3;
+  --text-dim:   #6B6B6B;
+  --text-on-brand: #0B0B0B;
+
+  /* Back-compat aliases so legacy var(--text-primary)/var(--border-color) refs
+     resolve per-theme instead of hitting hardcoded #fff fallbacks. */
+  --text-primary:   var(--text-main);
+  --text-secondary: var(--text-muted);
+  --text-tertiary:  var(--text-dim);
+  --border-color:        var(--border-subtle);
+  --border-color-strong: var(--border-strong);
+
+  /* ---- Semantic · Status ---- */
+  --success:   var(--green-400);
+  --success-bg: rgba(34, 197, 94, 0.15);
+  --success-bd: rgba(34, 197, 94, 0.32);
+  --warning:   var(--amber-500);
+  --warning-bg: rgba(250, 204, 21, 0.15);
+  --warning-bd: rgba(250, 204, 21, 0.32);
+  --danger:    var(--rose-400);
+  --danger-bg: rgba(244, 63, 94, 0.15);
+  --danger-bd: rgba(244, 63, 94, 0.32);
+  --info:      var(--amber-500);
+  --info-bg:   rgba(250, 204, 21, 0.15);
+  --info-bd:   rgba(250, 204, 21, 0.32);
+
+  /* ---- Accent helper tints (for icons / chips) ---- */
+  --tint-orange: rgba(34, 197, 94, 0.16);
+  --tint-amber:  rgba(250, 204, 21, 0.16);
+  --tint-green:  rgba(34, 197, 94, 0.16);
+  --tint-rose:   rgba(244, 63, 94, 0.16);
+
+  /* ---- Named accents used across pages (code highlights, headers) ---- */
+  --accent-orange: #22C55E;
+  --accent-amber:  #FACC15;
+  --accent-green:  #22C55E;
+  --accent-rose:   #FB7185;
+  --accent-cyan:   #4ADE80; /* green-400 — fresh pop, on-palette */
+
+  /* ---- Typography ---- */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, sans-serif;
+
+  --fs-xs:   0.75rem;
+  --fs-sm:   0.875rem;
+  --fs-base: 1rem;
+  --fs-lg:   1.125rem;
+  --fs-xl:   1.25rem;
+  --fs-2xl:  1.5rem;
+  --fs-3xl:  1.875rem;
+  --fs-4xl:  2.5rem;
+  --fs-5xl:  3.5rem;
+
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semi:   600;
+  --fw-bold:   700;
+  --fw-extra:  800;
+
+  --lh-tight: 1.15;
+  --lh-snug:  1.35;
+  --lh-base:  1.55;
+
+  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.03em;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.08em;
+
+  /* ---- Spacing scale (4px base) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+
+  /* ---- Radii ---- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* ---- Shadows / elevation ---- */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.40);
+  --shadow-md: 0 10px 30px -12px rgba(0,0,0,0.62);
+  --shadow-lg: 0 24px 60px -20px rgba(0,0,0,0.72);
+  --shadow-glow: 0 0 28px rgba(34, 197, 94, 0.34);
+  --shadow-inset: inset 0 1px 1px rgba(245,245,245,0.06);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --speed-fast: 140ms;
+  --speed-base: 240ms;
+  --speed-slow: 420ms;
+
+  /* ---- Layout ---- */
+  --sidebar-w: 264px;
+  --content-max: 1320px;
+  --z-sidebar: 100;
+  --z-header: 50;
+  --z-modal: 200;
+}
+
+/* ============================================================================
+   LIGHT THEME — overrides the SEMANTIC layer only
+   ============================================================================ */
+[data-theme="light"] {
+  --bg-base:       #F6F7F4;
+  --bg-base-2:     #FFFFFF;
+  --surface:       rgba(255, 255, 255, 0.82);
+  --surface-2:     rgba(255, 255, 255, 0.94);
+  --surface-solid: #FFFFFF;
+  --surface-hover: rgba(244, 247, 242, 0.96);
+  --surface-raised: #FFFFFF;
+  --bg-secondary:   #FFFFFF;
+  --bg-tertiary:    #F1F2EF;
+
+  --border-subtle: rgba(17, 17, 17, 0.10);
+  --border-strong: rgba(17, 17, 17, 0.20);
+  --border-glow:   rgba(22, 163, 74, 0.42);
+  --border-brand:  rgba(22, 163, 74, 0.35);
+
+  --text-main:  #0B0B0B;
+  --text-muted: #575757;
+  --text-dim:   #8A8A8A;
+
+  --text-primary:   var(--text-main);
+  --text-secondary: var(--text-muted);
+  --text-tertiary:  var(--text-dim);
+  --border-color:        var(--border-subtle);
+  --border-color-strong: var(--border-strong);
+
+  --primary:        var(--brand-600);
+  --primary-hover:  var(--brand-700);
+  --primary-light:  var(--brand-500);
+  --primary-glow:   rgba(22, 163, 74, 0.22);
+
+  --tint-orange: rgba(22, 163, 74, 0.12);
+  --tint-amber:  rgba(202, 138, 4, 0.14);
+  --tint-green:  rgba(21, 128, 61, 0.12);
+  --tint-rose:   rgba(225, 29, 72, 0.12);
+
+  --shadow-sm: 0 1px 2px rgba(17, 17, 17, 0.08);
+  --shadow-md: 0 12px 30px -14px rgba(17, 17, 17, 0.24);
+  --shadow-lg: 0 26px 60px -22px rgba(17, 17, 17, 0.30);
+  --shadow-glow: 0 0 26px rgba(22, 163, 74, 0.24);
+}

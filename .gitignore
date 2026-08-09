@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+api/node_modules/
+worker/node_modules/
+
+# Build & Dist output
+frontend/dist/
+frontend/dist_bak*/
+
+# OS & Logs
+.DS_Store
+Thumbs.db
+*.log
+
+# Uploads & Temp
+uploads/
+tmp/
+.workbuddy-ai/
+
+# Environment / Local Secrets - Never commit real credentials
+.env
+api/.env
+frontend/.env
+worker/.env
+.env.local
+.env.*.local

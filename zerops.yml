@@ -1,0 +1,57 @@
+zerops:
+  - setup: frontend
+    build:
+      base: nodejs@22
+      buildCommands:
+        - cd frontend && npm ci && npm run build
+      deployFiles: frontend/dist/~
+      envVariables:
+        VITE_GOOGLE_CLIENT_ID: "282697891216-fvla018lcu7mjrbv8nvvjehkc7j7r1oi.apps.googleusercontent.com"
+        VITE_API_URL: "https://api-2ba1-3000.prg1.zerops.app/api"
+    run:
+      base: static
+      ports:
+        - port: 80
+          httpSupport: true
+
+  - setup: api
+    build:
+      base: nodejs@22
+      buildCommands:
+        - cd api && npm ci
+      deployFiles: api/~
+    run:
+      base: nodejs@22
+      ports:
+        - port: 3000
+          httpSupport: true
+      start: sh -c "node src/index.js"
+      envVariables:
+        PORT: "3000"
+        DATABASE_URL: ${db_connectionString}
+        REDIS_URL: ${cache_connectionString}
+        JWT_SECRET: ${PAYCRAFT_JWT_SECRET}
+        STORAGE_URL: ${storage_apiUrl}
+        STORAGE_KEY: ${storage_secretAccessKey}
+        STORAGE_BUCKET: paycraft-files
+        NODE_ENV: production
+        GOOGLE_CLIENT_ID: "282697891216-fvla018lcu7mjrbv8nvvjehkc7j7r1oi.apps.googleusercontent.com"
+
+  - setup: worker
+    build:
+      base: nodejs@22
+      buildCommands:
+        - cd worker && npm ci
+      deployFiles: worker/~
+    run:
+      base: nodejs@22
+      start: sh -c "node src/index.js"
+      envVariables:
+        DATABASE_URL: ${db_connectionString}
+        REDIS_URL: ${cache_connectionString}
+        STORAGE_URL: ${storage_apiUrl}
+        STORAGE_KEY: ${storage_secretAccessKey}
+        STORAGE_BUCKET: paycraft-files
+        NODE_ENV: production
+
+
