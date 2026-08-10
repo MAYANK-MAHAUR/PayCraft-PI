@@ -357,7 +357,14 @@ a { color: inherit; }
 .pc-tx-card-ref { font-family: var(--font-mono); color: #4ADE80; font-weight: 600; }
 
 @media (max-width: 900px) {
-  .sidebar { display: none; }
+  .dashboard-layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .sidebar { display: none !important; }
   .mobile-header {
     display: flex;
     justify-content: space-between;
@@ -369,6 +376,7 @@ a { color: inherit; }
     top: 0;
     z-index: 100;
     backdrop-filter: blur(12px);
+    width: 100%;
   }
   .mobile-drawer-overlay {
     display: block;
@@ -386,15 +394,18 @@ a { color: inherit; }
     animation: pcSlideDown 0.2s ease;
   }
   .main-content {
-    margin-left: 0;
+    margin-left: 0 !important;
     padding: 16px;
     width: 100%;
+    max-width: 100%;
+    flex: 1;
+    box-sizing: border-box;
   }
   .page-title {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
   }
   .glass-card {
-    padding: 20px 16px;
+    padding: 18px 14px;
   }
   .data-table-container { display: none; }
   .pc-tx-cards { display: flex; flex-direction: column; gap: 12px; }
