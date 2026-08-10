@@ -57,7 +57,7 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.7rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-main)' }}>PayCraft PI Network</h1>
@@ -90,7 +90,7 @@ export default function Login() {
               color: 'var(--accent-emerald)',
             }}
           >
-            <UserCheck size={18} /> Continue as Guest / Demo Judge
+            <UserCheck size={18} /> Continue as Guest
           </button>
         </div>
 

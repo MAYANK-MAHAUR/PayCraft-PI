@@ -1,22 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Camera, Upload, X, RefreshCw } from 'lucide-react';
+import { Camera, Upload, X, RefreshCw, Info } from 'lucide-react';
 
 /**
  * QrScanner — universal PayCraft QR scanner.
  *
- *  - On **mobile** (or any device with a usable rear camera): opens the
- *    rear camera via getUserMedia and decodes the first PI QR it sees.
- *  - On **desktop** (no camera / user denied camera): shows a clean file
- *    upload UI that decodes the QR from the chosen image.
- *
- * Both paths funnel into the same onScan(decodedText) callback, which is
- * what the caller uses to navigate the user to the payment screen.
+ *  - On mobile: opens the camera via getUserMedia.
+ *  - On desktop/laptop: shows a clean notice that live camera scanning
+ *    is not supported on desktop and provides QR image upload instead.
  */
 export default function QrScanner({ onScan, onClose }) {
   const scannerRef = useRef(null);
   const html5QrRef = useRef(null);
-  const [mode, setMode] = useState('idle'); // 'idle' | 'camera' | 'upload' | 'error'
+  const [mode, setMode] = useState('idle'); // 'idle' | 'camera' | 'upload'
+  const [noticeMsg, setNoticeMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef(null);
 
@@ -36,14 +33,22 @@ export default function QrScanner({ onScan, onClose }) {
     return () => {
       stop();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const startCamera = async () => {
     setErrorMsg('');
+    setNoticeMsg('');
+
+    // Detect desktop/laptop device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isMobile) {
+      setNoticeMsg('Camera scanning is not supported in desktop/laptop browsers. Please upload a QR image instead.');
+      setMode('upload');
+      return;
+    }
+
     setMode('camera');
     try {
-      // Wait a tick so the reader div mounts
       await new Promise((r) => setTimeout(r, 50));
       const html5Qr = new Html5Qrcode('qr-reader');
       html5QrRef.current = html5Qr;
@@ -55,13 +60,11 @@ export default function QrScanner({ onScan, onClose }) {
           await stop();
           onScan(decodedText);
         },
-        () => {
-          /* ignore per-frame decode failures */
-        }
+        () => {}
       );
     } catch (err) {
       console.warn('Camera start failed:', err);
-      setErrorMsg('Could not start camera. Try uploading a QR image instead.');
+      setNoticeMsg('Camera scanning is not supported in desktop/laptop browsers. Please upload a QR image instead.');
       setMode('upload');
     }
   };
@@ -70,6 +73,7 @@ export default function QrScanner({ onScan, onClose }) {
     const file = e.target.files?.[0];
     if (!file) return;
     setErrorMsg('');
+    setNoticeMsg('');
     setMode('upload');
     try {
       if (!html5QrRef.current) {
@@ -86,13 +90,8 @@ export default function QrScanner({ onScan, onClose }) {
   };
 
   return (
-    <div
-      style={{
-        textAlign: 'center',
-        padding: '10px 0',
-      }}
-    >
-      {/* Camera viewport / file target — always rendered so Html5Qrcode can mount into it */}
+    <div style={{ textAlign: 'center', padding: '10px 0' }}>
+      {/* Camera viewport — mounted for Html5Qrcode */}
       <div
         id="qr-reader"
         ref={scannerRef}
@@ -108,6 +107,27 @@ export default function QrScanner({ onScan, onClose }) {
           display: mode === 'camera' ? 'block' : 'none',
         }}
       />
+
+      {noticeMsg && (
+        <div
+          style={{
+            background: 'rgba(59,130,246,0.12)',
+            border: '1px solid rgba(59,130,246,0.3)',
+            color: '#60a5fa',
+            padding: '12px 14px',
+            borderRadius: '12px',
+            fontSize: '0.85rem',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            textAlign: 'left',
+          }}
+        >
+          <Info size={18} style={{ flexShrink: 0 }} />
+          <div>{noticeMsg}</div>
+        </div>
+      )}
 
       {mode === 'idle' && (
         <>
@@ -125,7 +145,7 @@ export default function QrScanner({ onScan, onClose }) {
               Scan a PayCraft PI QR
             </h4>
             <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              We'll open your camera on mobile, or you can upload an image on desktop.
+              Camera scanning is active on mobile devices. On desktop/laptop, upload a QR image.
             </p>
           </div>
 
@@ -186,7 +206,6 @@ export default function QrScanner({ onScan, onClose }) {
             style={{ display: 'none' }}
             id="qr-file-input"
             onClick={(e) => {
-              // reset so the same file can be re-picked
               e.target.value = '';
             }}
           />
@@ -226,6 +245,7 @@ export default function QrScanner({ onScan, onClose }) {
               await stop();
               setMode('idle');
               setErrorMsg('');
+              setNoticeMsg('');
             }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
           >

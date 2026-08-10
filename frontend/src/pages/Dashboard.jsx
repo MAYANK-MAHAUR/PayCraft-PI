@@ -94,7 +94,7 @@ export default function Dashboard() {
       />
 
       {/* Action Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', margin: 0 }}>
             Unified Payments Overview
@@ -104,11 +104,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={() => handleOpenPiModal('pay')} className="btn btn-primary">
-            <Send size={16} /> New Transfer
-          </button>
-        </div>
+
       </div>
 
       {/* Recent Payees / Contacts Carousel */}
@@ -290,7 +286,7 @@ export default function Dashboard() {
               ) : (
                 <tr>
                   <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '30px' }}>
-                    No PI transactions recorded yet. Click <strong>"New Transfer"</strong> above to send one.
+                    No PI transactions recorded yet. Click <strong>"Send PI"</strong> to send one.
                   </td>
                 </tr>
               )}

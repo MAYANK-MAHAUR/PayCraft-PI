@@ -23,13 +23,13 @@ export default function QRCode({ value, size = 200, dark = false, className = ''
   }, [value, size, dark]);
 
   if (error) {
-    return <div className="qr-frame" style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>QR unavailable</div>;
+    return <div className="qr-frame" style={{ width: '100%', maxWidth: size, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>QR unavailable</div>;
   }
 
   return (
     <div
       className={`qr-frame ${dark ? 'dark' : ''} ${className}`}
-      style={{ width: size, height: size }}
+      style={{ width: '100%', maxWidth: size, aspectRatio: '1 / 1' }}
       role="img"
       aria-label={`QR code for ${value}`}
       dangerouslySetInnerHTML={{ __html: svg }}

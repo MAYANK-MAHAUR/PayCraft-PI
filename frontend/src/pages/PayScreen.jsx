@@ -142,7 +142,7 @@ export default function PayScreen() {
     : Math.round((parseFloat(amountDollars) || 0) * 100);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '32px' }}>
         <Link to="/" className="btn btn-ghost btn-sm" style={{ marginBottom: 16, paddingLeft: 0 }}>
           <ArrowLeft size={16} /> PayCraft

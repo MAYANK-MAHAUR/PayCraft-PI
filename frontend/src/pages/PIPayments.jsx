@@ -365,14 +365,7 @@ es.addEventListener('payment.received', (e) => {
             )}
           </>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(0, 260px) minmax(0, 1fr)',
-              gap: 24,
-              alignItems: 'start',
-            }}
-          >
+          <div className="pc-pay-grid">
             {/* QR + ID */}
             <div style={{ textAlign: 'center' }}>
               <div
@@ -434,8 +427,8 @@ es.addEventListener('payment.received', (e) => {
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
                   PI Payment ID
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                  <code style={{ fontSize: '1rem', fontWeight: 700, color: '#22C55E', fontFamily: 'ui-monospace, monospace' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                  <code style={{ fontSize: '1rem', fontWeight: 700, color: '#22C55E', fontFamily: 'ui-monospace, monospace', overflowWrap: 'anywhere', wordBreak: 'break-all' }}>
                     {session.piPaymentId}
                   </code>
                   <button onClick={handleCopy} className="btn btn-ghost btn-sm" style={{ padding: '6px 10px' }}>

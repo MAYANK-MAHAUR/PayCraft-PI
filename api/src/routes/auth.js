@@ -192,8 +192,8 @@ router.post('/guest', authLimiter, async (req, res, next) => {
   try {
     const randomId = Math.floor(1000 + Math.random() * 9000);
     const guestEmail = `guest_${Date.now()}_${randomId}@paycraft.app`;
-    const guestName = `Guest Judge #${randomId}`;
-    const candidatePiHandle = `guest.judge${randomId}@paycraft`;
+    const guestName = `Guest #${randomId}`;
+    const candidatePiHandle = `guest${randomId}@paycraft`;
     const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(guestEmail)}`;
 
     const result = await db.query(

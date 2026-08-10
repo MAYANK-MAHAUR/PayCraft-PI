@@ -336,7 +336,9 @@ export default function PiPayModal({ isOpen, onClose, action = 'pay', initialPay
                   border: '1px solid var(--border-subtle)',
                   color: 'var(--text-muted)',
                   cursor: 'pointer',
-                  padding: '8px',
+                  padding: '10px',
+                  minWidth: '44px',
+                  minHeight: '44px',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -386,7 +388,7 @@ export default function PiPayModal({ isOpen, onClose, action = 'pay', initialPay
                         <div style={{ position: 'relative' }}>
                           <input
                             type="text"
-                            placeholder="e.g. alex@paycraft, john@gmail.com"
+                            placeholder="e.g. mayankgaming179@paycraft"
                             value={payeeQuery}
                             onChange={(e) => {
                               setPayeeQuery(e.target.value);

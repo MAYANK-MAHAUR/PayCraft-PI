@@ -72,7 +72,7 @@ export default function ApiKeys() {
           <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '14px' }}>
             This key will <strong>NEVER</strong> be displayed again. Store it securely.
           </p>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <div className="code-block" style={{ flex: 1, margin: 0, color: '#38bdf8' }}>
               {newKeyResult.apiKey}
             </div>

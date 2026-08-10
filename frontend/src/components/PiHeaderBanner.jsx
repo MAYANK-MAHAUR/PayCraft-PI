@@ -20,23 +20,31 @@ export default function PiHeaderBanner({ onOpenPiModal }) {
   };
 
   return (
-    <div
-      className="pi-header-banner"
-      style={{
-        width: '100%',
-        padding: '20px 24px',
-        borderRadius: '20px',
-        background: 'var(--surface-2)',
-        border: '1px solid rgba(34, 197, 94, 0.25)',
-        boxShadow: '0 10px 30px -10px rgba(34, 197, 94, 0.2)',
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '16px',
-        marginBottom: '24px',
-      }}
-    >
+    <>
+      <style>{`
+        @media (max-width: 600px) {
+          .pc-banner-actions { width: 100%; }
+          .pc-banner-actions > .btn { flex: 1 1 100%; justify-content: center; }
+          .pi-header-banner { padding: 16px; }
+        }
+      `}</style>
+      <div
+        className="pi-header-banner"
+        style={{
+          width: '100%',
+          padding: '20px 24px',
+          borderRadius: '20px',
+          background: 'var(--surface-2)',
+          border: '1px solid rgba(34, 197, 94, 0.25)',
+          boxShadow: '0 10px 30px -10px rgba(34, 197, 94, 0.2)',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          marginBottom: '24px',
+        }}
+      >
       {/* User Info & PI Handle */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <img
@@ -108,7 +116,7 @@ export default function PiHeaderBanner({ onOpenPiModal }) {
         </div>
 
         {/* Buttons */}
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="pc-banner-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
             type="button"
             className="btn btn-primary"
@@ -190,5 +198,6 @@ export default function PiHeaderBanner({ onOpenPiModal }) {
         </div>
       </div>
     </div>
+    </>
   );
 }

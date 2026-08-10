@@ -95,11 +95,12 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
             style={{
               background: '#22C55E',
               borderRadius: 28,
-              padding: '48px 56px',
+              padding: '36px 24px',
               textAlign: 'center',
               color: '#0B0B0B',
               boxShadow: '0 24px 80px rgba(34,197,94,0.45)',
-              minWidth: 320,
+              maxWidth: 380,
+              width: '100%',
             }}
           >
             <div className="pc-pulse-ring" style={{ margin: '0 auto 20px' }}>
@@ -113,6 +114,7 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
         ) : (
           <motion.div
             key="success"
+            className="pc-overlay-card"
             initial={{ scale: 0.7, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0 }}
@@ -122,11 +124,11 @@ export default function PaymentSuccessOverlay({ isProcessing = false, data = nul
               position: 'relative',
               background: '#22C55E',
               borderRadius: 32,
-              padding: '56px 48px',
+              padding: '44px 28px',
               textAlign: 'center',
               color: '#0B0B0B',
               boxShadow: '0 30px 100px rgba(34,197,94,0.55)',
-              maxWidth: 460,
+              maxWidth: 440,
               width: '100%',
             }}
           >

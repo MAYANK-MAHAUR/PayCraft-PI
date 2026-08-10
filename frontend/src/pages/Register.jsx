@@ -70,7 +70,7 @@ export default function Register() {
 
   if (registeredKeys) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+      <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
         <div className="glass-card" style={{ width: '100%', maxWidth: '520px', padding: '36px' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <CheckCircle2 size={48} color="var(--accent-emerald)" style={{ margin: '0 auto 12px auto' }} />
@@ -103,7 +103,7 @@ export default function Register() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div className="glass-card" style={{ width: '100%', maxWidth: '460px', padding: '36px' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.7rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-main)' }}>Create PI Account</h1>
@@ -136,7 +136,7 @@ export default function Register() {
               color: 'var(--accent-emerald)',
             }}
           >
-            <UserCheck size={18} /> Continue as Guest / Demo Judge
+            <UserCheck size={18} /> Continue as Guest
           </button>
         </div>
 
@@ -160,7 +160,7 @@ export default function Register() {
             <input 
               type="text" 
               className="form-input" 
-              placeholder="John Doe or Acme Corp"
+              placeholder="John Doe"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
               required

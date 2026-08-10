@@ -33,13 +33,15 @@ export default function GoogleLoginButton({ onSuccess, onError }) {
         });
 
         if (googleBtnRef.current) {
+          const cw = googleBtnRef.current.clientWidth || 360;
+          const btnWidth = Math.min(400, Math.max(200, cw));
           window.google.accounts.id.renderButton(googleBtnRef.current, {
             theme: 'outline',
             size: 'large',
             text: 'continue_with',
             shape: 'rectangular',
             logo_alignment: 'left',
-            width: 360,
+            width: btnWidth,
           });
         }
         initialized.current = true;

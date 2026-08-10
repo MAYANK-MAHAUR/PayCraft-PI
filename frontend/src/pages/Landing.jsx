@@ -181,6 +181,12 @@ export default function Landing() {
         @media (max-width:880px){
           .pc-feat-grid { grid-template-columns:1fr; }
         }
+        @media (max-width:640px){
+          .pc-cta { flex-direction: column; align-items: stretch; }
+          .pc-cta .btn { width: 100%; text-align: center; justify-content: center; }
+          .pc-demo-overlay { padding: 16px; gap: 8px; text-align: center; }
+          .pc-modal-content { padding: 20px 16px; width: 94%; margin: 0 auto; }
+        }
 
         .pc-theme-btn {
           padding: 7px 14px; border-radius: 999px; cursor: pointer;
@@ -200,8 +206,8 @@ export default function Landing() {
         backdropFilter: 'blur(12px)',
         position: 'sticky', top: 0, zIndex: 50, background: 'var(--pc-nav-bg)',
       }}>
-        <span style={{ fontSize: '1.3rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--pc-green)' }}>PayCraft</span>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <span style={{ fontSize: '1.3rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--pc-green)', whiteSpace: 'nowrap' }}>PayCraft</span>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           <button type="button" onClick={handleGuestLogin} disabled={guestLoading} className="btn pc-btn btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <UserCheck size={14} /> Guest Demo
           </button>
@@ -224,7 +230,7 @@ export default function Landing() {
         
         <div className="pc-cta" style={{ marginBottom: 30 }}>
           <button type="button" onClick={handleGuestLogin} disabled={guestLoading} className="btn pc-btn btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <UserCheck size={18} /> Continue as Guest / Demo Judge <ArrowRight size={18} />
+            <UserCheck size={18} /> Continue as Guest <ArrowRight size={18} />
           </button>
           <Link to="/register" className="btn btn-secondary btn-lg">Create Account</Link>
           <button type="button" onClick={() => setShowTutorialModal(true)} className="btn btn-secondary btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
@@ -241,11 +247,8 @@ export default function Landing() {
             <source src="https://raw.githubusercontent.com/MAYANK-MAHAUR/PayCraft-PI/main/demo.mp4" type="video/mp4" />
           </video>
           <div className="pc-demo-overlay">
-            <div className="pc-play-btn">
-              <Play size={28} fill="#000" />
-            </div>
-            <div style={{ fontWeight: 800, fontSize: '1.2rem', letterSpacing: '-0.01em' }}>Watch 1-Minute PayCraft Demo Video</div>
-            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', background: 'rgba(0,0,0,0.6)', padding: '4px 12px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <div style={{ fontWeight: 800, fontSize: '1.2rem', letterSpacing: '-0.01em', textAlign: 'center' }}>Watch 1-Minute PayCraft Demo Video</div>
+            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', background: 'rgba(0,0,0,0.6)', padding: '4px 12px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.2)', textAlign: 'center' }}>
               Click to expand full screen video
             </div>
           </div>
@@ -278,7 +281,7 @@ export default function Landing() {
           <div className="pc-feat pc-reveal" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <div className="ico" style={{ background: 'rgba(250,204,21,.14)', color: 'var(--pc-yellow)' }}><QrCode size={24} /></div>
             <h3>QR &amp; Scan-to-Pay</h3>
-            <p style={{ marginBottom: 14 }}>Generate real, scannable payment QR codes for instant mobile checkout — openable with any camera or Google Lens.</p>
+            <p style={{ marginBottom: 14 }}>Generate real, scannable payment QR codes for instant mobile checkout - openable with any camera or Google Lens.</p>
             <QRCode value="https://paycraft.app/pay" size={120} />
           </div>
         </div>
@@ -319,7 +322,7 @@ export default function Landing() {
       {/* ---------- FOOTER ---------- */}
       <footer style={{ borderTop: '1px solid var(--pc-border)', padding: '34px clamp(18px,5vw,40px)', textAlign: 'center', color: 'var(--pc-muted)', fontSize: '0.85rem' }}>
         <div style={{ fontWeight: 800, color: 'var(--pc-green)', marginBottom: 8 }}>PayCraft</div>
-        PayCraft &copy; 2026 — Developer Payment Infrastructure, deployed on Zerops.
+        PayCraft &copy; 2026  Developer Payment Infrastructure, deployed on Zerops.
         <div style={{ marginTop: 12 }}>
           <button type="button" onClick={() => setShowTutorialModal(true)} style={{ background: 'none', border: 'none', color: 'var(--pc-green)', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}>
             Re-open Welcome Tutorial Guide
@@ -389,9 +392,6 @@ export default function Landing() {
             </div>
 
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-              <button type="button" onClick={() => { closeTutorial(); handleGuestLogin(); }} disabled={guestLoading} className="btn pc-btn" style={{ fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <UserCheck size={16} /> Continue as Guest / Judge <ArrowRight size={16} />
-              </button>
               <button type="button" onClick={() => { closeTutorial(); setShowVideoModal(true); }} className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <Video size={16} /> Watch Demo Video
               </button>
