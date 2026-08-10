@@ -293,6 +293,57 @@ export default function Dashboard() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile stacked cards (mirror the table above; shown only under 900px) */}
+        <div className="pc-tx-cards">
+          {stats?.recentTransactions && stats.recentTransactions.length > 0 ? (
+            stats.recentTransactions.map((tx) => {
+              const dir = tx.direction || 'unknown';
+              const isIncoming = dir === 'incoming';
+              const isSelf = dir === 'self';
+              const amountColor = isIncoming ? '#22c55e' : dir === 'outgoing' ? '#EF4444' : '#FACC15';
+              const amountPrefix = isIncoming || isSelf ? '+' : '-';
+              const DirIcon = isSelf ? Wallet : isIncoming ? ArrowDownLeft : ArrowUpRight;
+              const dirLabel = isSelf ? 'Top-Up' : isIncoming ? 'Incoming' : 'Outgoing';
+              const counterpartyInitial = (tx.counterpartyName || '?').charAt(0).toUpperCase();
+              return (
+                <div className="pc-tx-card" key={tx.id}>
+                  <div className="pc-tx-card-head">
+                    <span className="pc-tx-card-ref">{tx.pi_ref_id || (tx.id.length > 18 ? `${tx.id.slice(0, 8)}...${tx.id.slice(-6)}` : tx.id)}</span>
+                    <StatusBadge status={tx.status} />
+                    <span className="pc-tx-card-amount" style={{ color: amountColor }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px', borderRadius: '50%', background: `${amountColor}1A`, color: amountColor }}><DirIcon size={13} /></span>
+                      {amountPrefix}{(tx.amount / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="pc-tx-card-body">
+                    {isSelf ? (
+                      <span style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}><Wallet size={14} /></span>
+                    ) : (
+                      tx.counterpartyAvatar ? (
+                        <img src={tx.counterpartyAvatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--border-subtle)' }} />
+                      ) : (
+                        <span style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)' }}>{counterpartyInitial}</span>
+                      )
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.25 }}>
+                      <span className="pc-tx-card-name">{dirLabel}: {tx.counterpartyName || 'Unknown'}</span>
+                      {tx.counterpartyHandle && <span className="pc-tx-card-handle">{tx.counterpartyHandle}</span>}
+                    </div>
+                  </div>
+                  <div className="pc-tx-card-foot">
+                    <span>{tx.displayDescription || 'PI Transfer'}</span>
+                    <span>{new Date(tx.created_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '30px' }}>
+              No PI transactions recorded yet. Click <strong>"Send PI"</strong> to send one.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
