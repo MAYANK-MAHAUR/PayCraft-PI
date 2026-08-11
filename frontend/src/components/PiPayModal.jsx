@@ -7,7 +7,6 @@ import QrScanner from './QrScanner';
 import PaymentSuccessOverlay from './PaymentSuccessOverlay';
 import PayCraftMark from './PayCraftLogo';
 
-// Each action is its own distinct, simplified popup (no tab switcher).
 const META = {
   pay: {
     title: 'Send PI',
@@ -193,30 +192,27 @@ export default function PiPayModal({ isOpen, onClose, action = 'pay', initialPay
     }
   };
 
-  // Handle a QR scan result: parse ?pa=&pn=&am= from the URL, or accept a
-  // bare PI Handle, and jump straight into the Send PI view with the payee
-  // pre-filled. Also handles scannable URLs from Google Lens.
   const handleQrScanResult = (qrPayloadStr) => {
     try {
       let piHandle = '';
       let payeeName = '';
       let amount = '';
 
-      // 1) Full https://.../pay?pa=...&pn=...&am=... URL (most common scan)
+      // 1) Full URL
       if (/^https?:\/\//i.test(qrPayloadStr) && qrPayloadStr.includes('pa=')) {
         const url = new URL(qrPayloadStr);
         piHandle = url.searchParams.get('pa') || '';
         payeeName = url.searchParams.get('pn') || '';
         amount = url.searchParams.get('am') || '';
       }
-      // 2) Bare key=value string (in case the QR encodes just params)
+      // 2) Bare key=value string
       else if (qrPayloadStr.includes('pa=')) {
         const urlParams = new URLSearchParams(qrPayloadStr.split('?')[1] || qrPayloadStr);
         piHandle = urlParams.get('pa') || '';
         payeeName = urlParams.get('pn') || '';
         amount = urlParams.get('am') || '';
       }
-      // 3) Bare PI Handle (just "alex@paycraft")
+      // 3) Bare PI Handle
       else if (qrPayloadStr.includes('@')) {
         piHandle = qrPayloadStr.trim();
       }
@@ -551,7 +547,7 @@ export default function PiPayModal({ isOpen, onClose, action = 'pay', initialPay
                     </form>
                   )}
 
-                  {/* SCAN QR — live camera on mobile, file upload on desktop */}
+                  {/* SCAN QR */}
                   {activeTab === 'qr_scan' && (
                     <QrScanner
                       onScan={handleQrScanResult}
@@ -616,7 +612,7 @@ export default function PiPayModal({ isOpen, onClose, action = 'pay', initialPay
                         </div>
                       </div>
 
-                      {/* Copy Link button — backup when QR can't be scanned */}
+                      {/* Copy Link button */}
                       <motion.button
                         type="button"
                         onClick={handleCopyLink}

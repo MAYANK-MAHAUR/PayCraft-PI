@@ -59,8 +59,7 @@ router.post('/session', async (req, res, next) => {
   }
 });
 
-// Shared: build the public checkout-session payload (merchant name + PI handle).
-// Enforces the 10-minute logical expiry. Throws the same errors as the GET route.
+// Shared: build public checkout-session payload
 async function getSessionPayload(sessionId) {
   const sessionRaw = await cache.get(`checkout:${sessionId}`);
   if (!sessionRaw) {
@@ -95,8 +94,7 @@ async function getSessionPayload(sessionId) {
   };
 }
 
-// Resolve a checkout session by its PI Payment ID (public). Must be defined
-// BEFORE `GET /:sessionId` so the literal "lookup" segment isn't treated as a param.
+// Resolve checkout session by PI Payment ID
 router.get('/lookup/:piPaymentId', async (req, res, next) => {
   try {
     const sessionId = await cache.get(`checkout:pid:${req.params.piPaymentId}`);
@@ -120,12 +118,7 @@ router.get('/:sessionId', async (req, res, next) => {
   }
 });
 
-/**
- * Pay a checkout session with real paper-money (PI wallet) transfer.
- * The authenticated caller is the payer (customer); funds move from their
- * wallet to the session merchant. Records a transaction and marks the
- * session completed. No mocks, no simulated failures.
- */
+// Pay checkout session
 router.post('/:sessionId/pay', authenticateMerchant, async (req, res, next) => {
   const client = await db.pool.connect();
   try {
@@ -237,8 +230,6 @@ router.post('/:sessionId/pay', authenticateMerchant, async (req, res, next) => {
     session.paymentId = piRefId;
     await cache.set(`checkout:${session.sessionId}`, JSON.stringify(session), 3600);
 
-    // Real-time push: the merchant (receiver) sees an incoming credit; the
-    // payer (sender) sees an outgoing debit against their wallet.
     const txId = txResult.rows[0].id;
     eventBus.publish(receiver.id, 'payment.received', {
       direction: 'incoming',
@@ -293,15 +284,7 @@ router.post('/:sessionId/pay', authenticateMerchant, async (req, res, next) => {
   }
 });
 
-/**
- * Demo "pay as customer" endpoint for the judge-facing PI Payments page.
- * The authenticated caller is the MERCHANT (judge). We ensure a real seeded
- * customer (`demo-customer@paycraft`) exists (topping up if needed) and move
- * REAL paper-money from that customer's wallet to the session merchant (the
- * judge), so the judge sees a genuine `payment.received` notification. This is a
- * REAL transfer — no mocks — exercising the exact same money path as a real
- * customer paying via /pay?cs=<id>.
- */
+// Demo "pay as customer" endpoint
 router.post('/:sessionId/pay-demo', authenticateMerchant, async (req, res, next) => {
   const client = await db.pool.connect();
   try {

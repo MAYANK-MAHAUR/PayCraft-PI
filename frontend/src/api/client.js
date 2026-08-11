@@ -21,7 +21,6 @@ const api = axios.create({
   },
 });
 
-// Inject Auth Token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('paycraft_token') || getCookie('paycraft_token');
   if (token) {
@@ -30,12 +29,10 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle Auth Expiry
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token if invalid/expired and not on auth pages
       if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
         localStorage.removeItem('paycraft_token');
         localStorage.removeItem('paycraft_merchant');

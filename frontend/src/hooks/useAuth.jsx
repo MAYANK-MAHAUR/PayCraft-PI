@@ -3,7 +3,7 @@ import api from '../api/client';
 
 const AuthContext = createContext(null);
 
-// Cookie Helpers
+
 export function setCookie(name, value, days = 30) {
   try {
     const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -83,11 +83,9 @@ export function AuthProvider({ children }) {
     setToken(newToken);
     setMerchant(newMerchant);
     
-    // Save to LocalStorage
     localStorage.setItem('paycraft_token', newToken);
     localStorage.setItem('paycraft_merchant', JSON.stringify(newMerchant));
 
-    // Save to Browser Cookies
     setCookie('paycraft_token', newToken, 30);
     setCookie('paycraft_merchant', JSON.stringify(newMerchant), 30);
   };

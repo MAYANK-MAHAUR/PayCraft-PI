@@ -2,13 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Camera, Upload, X, RefreshCw, Info } from 'lucide-react';
 
-/**
- * QrScanner — universal PayCraft QR scanner.
- *
- *  - On mobile: opens the camera via getUserMedia.
- *  - On desktop/laptop: shows a clean notice that live camera scanning
- *    is not supported on desktop and provides QR image upload instead.
- */
 export default function QrScanner({ onScan, onClose }) {
   const scannerRef = useRef(null);
   const html5QrRef = useRef(null);
@@ -91,7 +84,6 @@ export default function QrScanner({ onScan, onClose }) {
 
   return (
     <div style={{ textAlign: 'center', padding: '10px 0' }}>
-      {/* Camera viewport — mounted for Html5Qrcode */}
       <div
         id="qr-reader"
         ref={scannerRef}

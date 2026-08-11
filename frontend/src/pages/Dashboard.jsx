@@ -53,9 +53,6 @@ export default function Dashboard() {
     setPiModalOpen(true);
   };
 
-  // Build the per-account PI payment URL that the dashboard QR encodes.
-  // This is the same URL the /pi/qr endpoint returns, but we build it
-  // client-side so the dashboard works without an extra API round trip.
   const payUrl = merchant?.piHandle
     ? `${window.location.origin}/pay?pa=${encodeURIComponent(merchant.piHandle)}&pn=${encodeURIComponent(merchant.fullName || merchant.businessName || '')}&cu=USD`
     : '';

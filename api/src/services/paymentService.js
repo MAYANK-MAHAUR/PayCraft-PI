@@ -82,8 +82,6 @@ class PaymentService {
       console.warn('QR generation notice:', err.message);
     }
 
-    // Real payment processing: a valid, positive-amount payment is recorded as succeeded.
-    // No simulated declines — every confirmed payment succeeds.
     const newStatus = 'succeeded';
     const failureReason = null;
 
@@ -217,9 +215,6 @@ class PaymentService {
   }
 
   static async getStats(merchantId) {
-    // Inclusive scope: a merchant is a party to a transaction when they are the
-    // record owner, the sender, or the receiver. This surfaces both incoming
-    // (credit) and outgoing (debit) transfers, not just the ones they initiated.
     const whereClause = `WHERE (t.merchant_id = $1 OR t.sender_merchant_id = $1 OR t.receiver_merchant_id = $1)`;
 
     const totalVolumeResult = await db.query(
@@ -291,8 +286,6 @@ class PaymentService {
         counterpartyName = 'PI Wallet Top-Up';
       }
 
-      // Defensive mapping: legacy 'BANK/IMPS' labels (from pre-PI migrations)
-      // are normalized to the native 'PI Top-Up' label everywhere they render.
       const rawDesc = tx.description || '';
       const displayDescription = /bank|imps/i.test(rawDesc) ? 'PI Top-Up' : (rawDesc || 'PI Transfer');
 

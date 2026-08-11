@@ -15,7 +15,6 @@ import {
   Zap,
 } from 'lucide-react';
 
-// USD paper-money is stored as integer cents (matches the rest of the app).
 const formatUSD = (cents) =>
   '$' + (Number(cents) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -140,7 +139,6 @@ export default function PIPayments() {
     setPaying(true);
     try {
       await api.post(`/checkout/${session.sessionId}/pay-demo`);
-      // The judge's own merchant account receives a real payment.received event.
       setPaid(true);
       stopTimers();
     } catch (err) {

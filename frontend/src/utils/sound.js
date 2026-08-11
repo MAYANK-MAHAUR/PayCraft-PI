@@ -1,11 +1,9 @@
-// Web Audio synthesizer chime for payment confirmations & real-time incoming payments.
 export function playSuccessChime() {
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
     const now = ctx.currentTime;
-    // Bright ascending major arpeggio (C5 - E5 - G5 - C6)
     const notes = [523.25, 659.25, 783.99, 1046.5];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
@@ -21,7 +19,5 @@ export function playSuccessChime() {
       osc.stop(t + 0.5);
     });
     setTimeout(() => ctx.close().catch(() => {}), 1200);
-  } catch (_) {
-    /* Audio not available — silent fallback */
-  }
+  } catch (_) {}
 }

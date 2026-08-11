@@ -4,14 +4,7 @@ const eventBus = require('../services/eventBus');
 
 const router = express.Router();
 
-/**
- * Server-Sent Events stream.
- *
- * The browser opens this long-lived connection while the dashboard is open.
- * Every payment/top-up involving the authenticated merchant is pushed here in
- * real time, powering live toasts and live-updating numbers (balance, volume,
- * counts, transaction list) without polling.
- */
+// Server-Sent Events stream
 router.get('/stream', authenticateMerchant, (req, res) => {
   const merchantId = req.merchant.id;
 

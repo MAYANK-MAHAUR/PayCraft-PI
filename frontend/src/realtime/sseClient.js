@@ -1,9 +1,3 @@
-// Minimal fetch-based Server-Sent Events client.
-//
-// The browser's native EventSource cannot attach an Authorization header, so
-// we drive the stream ourselves with fetch + a ReadableStream reader. This lets
-// us authenticate the SSE connection with the same Bearer token as the rest of
-// the app, parse SSE frames, and expose a simple onEvent callback.
 
 function normalize(lineEndings) {
   return lineEndings.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -27,7 +21,6 @@ export function createSSE(url, { token, onEvent, onOpen, onError } = {}) {
       const data = JSON.parse(dataLines.join('\n'));
       onEvent?.(eventType, data);
     } catch (e) {
-      /* ignore malformed frame */
     }
   };
 
@@ -72,7 +65,6 @@ export function createSSE(url, { token, onEvent, onOpen, onError } = {}) {
       try {
         reader?.cancel();
       } catch (e) {
-        /* ignore */
       }
     },
   };
