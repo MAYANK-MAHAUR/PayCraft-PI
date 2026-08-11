@@ -38,11 +38,11 @@ const storage = {
       }
     }
 
-    // Local fallback
+    
     if (!fs.existsSync(localUploadsDir)) {
       fs.mkdirSync(localUploadsDir, { recursive: true });
     }
-    const filePath = path.join(localUploadsDir, key.replace(/\//g, '_'));
+    const filePath = path.join(localUploadsDir, key.replace(/\
     fs.writeFileSync(filePath, buffer);
     return `/uploads/${path.basename(filePath)}`;
   }

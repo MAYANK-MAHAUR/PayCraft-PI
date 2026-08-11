@@ -10,13 +10,10 @@ const { BadRequestError, UnauthorizedError, ConflictError } = require('../utils/
 const router = express.Router();
 const authLimiter = rateLimiter({ windowSeconds: 60, maxRequests: 20 });
 
-/**
- * Ensure merchant has a valid PI Handle and starting wallet balance
- */
+// Ensure merchant has a valid PI handle and starting balance
 async function ensureMerchantPiHandle(merchant) {
   if (!merchant.pi_handle) {
     let candidatePiHandle = generatePiHandle(merchant.email, merchant.business_name);
-    // Check collision
     const existingPiHandle = await db.query('SELECT id FROM merchants WHERE pi_handle = $1', [candidatePiHandle]);
     if (existingPiHandle.rows.length > 0) {
       candidatePiHandle = `${candidatePiHandle.split('@')[0]}.${Math.floor(100 + Math.random() * 900)}@paycraft`;
@@ -31,56 +28,11 @@ async function ensureMerchantPiHandle(merchant) {
   return merchant;
 }
 
-/**
- * Create or update a merchant from Google identity data, generate API keys on first
- * signup, and return the merchant row. Shared by the real Google OAuth route.
- */
-async function upsertGoogleMerchant({ email, name, picture, googleId }) {
-  const merchantResult = await db.query(
-    'SELECT id, email, business_name, full_name, pi_handle, wallet_balance, avatar_url, google_id, created_at FROM merchants WHERE email = $1 OR google_id = $2',
-    [email, googleId]
-  );
-
-  let merchant;
-  if (merchantResult.rows.length === 0) {
-    let candidatePiHandle = generatePiHandle(email, name);
-    const piHandleCheck = await db.query('SELECT id FROM merchants WHERE pi_handle = $1', [candidatePiHandle]);
-    if (piHandleCheck.rows.length > 0) {
-      candidatePiHandle = `${candidatePiHandle.split('@')[0]}.${Math.floor(100 + Math.random() * 900)}@paycraft`;
-    }
-
-    const insertResult = await db.query(
-      `INSERT INTO merchants (email, business_name, full_name, pi_handle, wallet_balance, google_id, avatar_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, email, business_name, full_name, pi_handle, wallet_balance, google_id, avatar_url, created_at`,
-      [email, `${name}'s PayCraft`, name, candidatePiHandle, 100000, googleId, picture]
-    );
-    merchant = insertResult.rows[0];
-
-    await KeyService.createKey(merchant.id, 'test', 'Default Test Key');
-    await KeyService.createKey(merchant.id, 'live', 'Default Live Key');
-  } else {
-    merchant = merchantResult.rows[0];
-    const updated = await db.query(
-      `UPDATE merchants SET google_id = COALESCE(google_id, $1), avatar_url = COALESCE(avatar_url, $2), full_name = COALESCE(full_name, $3) WHERE id = $4 RETURNING *`,
-      [googleId, picture, name, merchant.id]
-    );
-    merchant = updated.rows[0];
-  }
-
-  await ensureMerchantPiHandle(merchant);
-  return merchant;
-}
-
-/**
- * Verify a Google-issued id_token against Google's token endpoint.
- * Returns the decoded payload (email, name, picture, sub) on success.
- * GOOGLE_CLIENT_ID must be configured — audience (aud) is always enforced.
- */
+// Verify Google id_token with Google tokeninfo endpoint
 async function verifyGoogleCredential(credential) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
-    throw new BadRequestError('Google Sign-In is not configured (GOOGLE_CLIENT_ID missing)');
+    throw new BadRequestError('Google Sign-In is not configured');
   }
   const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
   if (!res.ok) {
@@ -88,7 +40,6 @@ async function verifyGoogleCredential(credential) {
   }
   const payload = await res.json();
 
-  // tokeninfo returns aud as the OAuth client id the token was minted for
   const audOk = payload.aud === clientId || (Array.isArray(payload.aud) && payload.aud.includes(clientId));
   if (!audOk) {
     throw new BadRequestError('Google token audience mismatch');
@@ -110,7 +61,7 @@ async function verifyGoogleCredential(credential) {
   return payload;
 }
 
-// Google OAuth Sign In / Sign Up
+// Google OAuth login / signup
 router.post('/google', authLimiter, async (req, res, next) => {
   try {
     const { credential } = req.body;
@@ -118,7 +69,6 @@ router.post('/google', authLimiter, async (req, res, next) => {
       throw new BadRequestError('Google credential (id_token) is required');
     }
 
-    // Real Google Identity Services id_token — verify with Google before trusting it
     const payload = await verifyGoogleCredential(credential);
     const email = String(payload.email).toLowerCase().trim();
     const name = String(payload.name || payload.given_name || email.split('@')[0]).trim();
@@ -129,7 +79,6 @@ router.post('/google', authLimiter, async (req, res, next) => {
       throw new BadRequestError('Email address could not be retrieved from Google account');
     }
 
-    // Check if user exists by email or google_id
     let merchantResult = await db.query(
       'SELECT id, email, business_name, full_name, pi_handle, wallet_balance, avatar_url, google_id, created_at FROM merchants WHERE email = $1 OR google_id = $2',
       [email, googleId]
@@ -137,7 +86,6 @@ router.post('/google', authLimiter, async (req, res, next) => {
 
     let merchant;
     if (merchantResult.rows.length === 0) {
-      // Create new user with Google details & PI Handle
       let candidatePiHandle = generatePiHandle(email, name);
       const piHandleCheck = await db.query('SELECT id FROM merchants WHERE pi_handle = $1', [candidatePiHandle]);
       if (piHandleCheck.rows.length > 0) {
@@ -152,12 +100,10 @@ router.post('/google', authLimiter, async (req, res, next) => {
       );
       merchant = insertResult.rows[0];
 
-      // Auto generate API keys
       await KeyService.createKey(merchant.id, 'test', 'Default Test Key');
       await KeyService.createKey(merchant.id, 'live', 'Default Live Key');
     } else {
       merchant = merchantResult.rows[0];
-      // Update Google ID and Avatar if not present
       const updated = await db.query(
         `UPDATE merchants SET google_id = COALESCE(google_id, $1), avatar_url = COALESCE(avatar_url, $2), full_name = COALESCE(full_name, $3) WHERE id = $4 RETURNING *`,
         [googleId, picture, name, merchant.id]
@@ -187,7 +133,7 @@ router.post('/google', authLimiter, async (req, res, next) => {
   }
 });
 
-// Guest / Judge One-Click Demo Sign-In
+// Guest demo login
 router.post('/guest', authLimiter, async (req, res, next) => {
   try {
     const randomId = Math.floor(1000 + Math.random() * 9000);
@@ -205,7 +151,6 @@ router.post('/guest', authLimiter, async (req, res, next) => {
 
     const merchant = result.rows[0];
 
-    // Automatically generate test & live API keys
     const testKey = await KeyService.createKey(merchant.id, 'test', 'Default Test Key');
     const liveKey = await KeyService.createKey(merchant.id, 'live', 'Default Live Key');
 
@@ -235,7 +180,7 @@ router.post('/guest', authLimiter, async (req, res, next) => {
   }
 });
 
-// Merchant Registration
+// Email/password registration
 router.post('/register', authLimiter, async (req, res, next) => {
   try {
     const { email, password, businessName, fullName, webhookUrl } = req.body;
@@ -249,18 +194,15 @@ router.post('/register', authLimiter, async (req, res, next) => {
     const sanitizedFullName = fullName ? String(fullName).trim() : sanitizedBusinessName;
     const sanitizedWebhookUrl = webhookUrl ? String(webhookUrl).trim() : null;
 
-    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(sanitizedEmail)) {
       throw new BadRequestError('Please provide a valid email address');
     }
 
-    // Password strength check
     if (password.length < 6) {
       throw new BadRequestError('Password must be at least 6 characters long');
     }
 
-    // Check existing email
     const existing = await db.query('SELECT id FROM merchants WHERE email = $1', [sanitizedEmail]);
     if (existing.rows.length > 0) {
       throw new ConflictError('Account with this email already exists');
@@ -284,7 +226,6 @@ router.post('/register', authLimiter, async (req, res, next) => {
 
     const merchant = result.rows[0];
 
-    // Automatically generate test & live API keys
     const testKey = await KeyService.createKey(merchant.id, 'test', 'Default Test Key');
     const liveKey = await KeyService.createKey(merchant.id, 'live', 'Default Live Key');
 
@@ -314,7 +255,7 @@ router.post('/register', authLimiter, async (req, res, next) => {
   }
 });
 
-// Merchant Login
+// Email/password login
 router.post('/login', authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -365,7 +306,7 @@ router.post('/login', authLimiter, async (req, res, next) => {
   }
 });
 
-// Get Current Merchant Profile
+// Get current profile
 router.get('/me', authenticateMerchant, async (req, res, next) => {
   try {
     let merchant = req.merchant;
@@ -394,7 +335,7 @@ router.get('/me', authenticateMerchant, async (req, res, next) => {
   }
 });
 
-// Update Profile / Settings
+// Update settings
 router.put('/settings', authenticateMerchant, async (req, res, next) => {
   try {
     const { businessName, fullName, webhookUrl, piHandle } = req.body;
@@ -408,7 +349,6 @@ router.put('/settings', authenticateMerchant, async (req, res, next) => {
       if (!sanitizedPiHandle.includes('@')) {
         sanitizedPiHandle = `${sanitizedPiHandle}@paycraft`;
       }
-      // Check collision
       const checkPiHandle = await db.query('SELECT id FROM merchants WHERE pi_handle = $1 AND id != $2', [sanitizedPiHandle, req.merchant.id]);
       if (checkPiHandle.rows.length > 0) {
         throw new ConflictError('This PI Handle is already taken');

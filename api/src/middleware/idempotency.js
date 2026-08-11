@@ -19,7 +19,7 @@ async function idempotency(req, res, next) {
       return res.status(parsed.statusCode).json(parsed.body);
     }
 
-    // Intercept res.json to cache response
+    
     const originalJson = res.json.bind(res);
     res.json = (body) => {
       if (res.statusCode >= 200 && res.statusCode < 300) {

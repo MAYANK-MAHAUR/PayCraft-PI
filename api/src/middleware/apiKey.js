@@ -34,7 +34,7 @@ async function authenticateApiKey(req, res, next) {
       throw new ForbiddenError('API Key has been revoked');
     }
 
-    // Update last_used_at asynchronously
+    
     db.query('UPDATE api_keys SET last_used_at = NOW() WHERE id = $1', [keyRecord.id]).catch(() => {});
 
     req.apiKey = keyRecord;

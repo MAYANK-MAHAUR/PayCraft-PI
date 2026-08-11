@@ -24,7 +24,7 @@ if (redisUrl) {
   }
 }
 
-// In-memory fallback if Redis is unavailable during local dev
+
 const memoryStore = new Map();
 
 const cache = {

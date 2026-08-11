@@ -4,15 +4,13 @@ const { authenticateMerchant } = require('../middleware/auth');
 const rateLimiter = require('../middleware/rateLimiter');
 const QRService = require('../services/qrService');
 const { generatePiRefId, formatCurrency } = require('../utils/helpers');
-const { BadRequestError, NotFoundError, ConflictError } = require('../utils/errors');
+const { BadRequestError, NotFoundError } = require('../utils/errors');
 const eventBus = require('../services/eventBus');
 
 const router = express.Router();
 const piLimiter = rateLimiter({ windowSeconds: 60, maxRequests: 30 });
 
-/**
- * Search users by PI Handle, Email, or Name for instant payee autocomplete
- */
+// Autocomplete search for payees by handle, email, or name
 router.get('/search', authenticateMerchant, async (req, res, next) => {
   try {
     const { q } = req.query;
@@ -44,9 +42,7 @@ router.get('/search', authenticateMerchant, async (req, res, next) => {
   }
 });
 
-/**
- * Get Recent Payees / Contacts
- */
+// Recent contacts
 router.get('/contacts', authenticateMerchant, async (req, res, next) => {
   try {
     const result = await db.query(
@@ -74,10 +70,7 @@ router.get('/contacts', authenticateMerchant, async (req, res, next) => {
   }
 });
 
-/**
- * Public merchant lookup by PI Handle — powers scannable QR payment screens.
- * No auth: only non-sensitive public fields are returned.
- */
+// Public payee lookup for QR pay screen
 router.get('/public/:handle', async (req, res, next) => {
   try {
     const handle = String(req.params.handle || '').trim().toLowerCase();
@@ -100,9 +93,7 @@ router.get('/public/:handle', async (req, res, next) => {
   }
 });
 
-/**
- * Generate standard PI QR Code (Static or Dynamic with Amount)
- */
+// Generate merchant PI QR code
 router.get('/qr', authenticateMerchant, async (req, res, next) => {
   try {
     const amount = req.query.amount ? parseInt(req.query.amount, 10) : null;
@@ -119,11 +110,10 @@ router.get('/qr', authenticateMerchant, async (req, res, next) => {
 
     if (!piHandle) {
       return res.status(400).json({
-        error: { message: 'Your account has no PI Handle set up yet. Please update your profile to generate a QR.' },
+        error: { message: 'Your account has no PI Handle set up yet.' },
       });
     }
 
-    // Scannable PI URL — opens the real /pay screen from any camera or Google Lens.
     const frontendUrl = process.env.FRONTEND_URL || 'https://paycraft.app';
     let piString = `${frontendUrl}/pay?pa=${encodeURIComponent(piHandle)}&pn=${encodeURIComponent(name)}&cu=USD`;
     if (amount && amount > 0) {
@@ -146,26 +136,23 @@ router.get('/qr', authenticateMerchant, async (req, res, next) => {
   }
 });
 
-/**
- * Instant PI Transfer (P2P / P2M)
- * Target can be PI Handle (alex@paycraft), Email (alex@gmail.com), or Recipient Merchant ID
- */
+// Instant P2P PI transfer
 router.post('/transfer', piLimiter, authenticateMerchant, async (req, res, next) => {
   const client = await db.pool.connect();
   try {
     const { recipient, amount, note } = req.body;
 
     if (!recipient || !amount) {
-      throw new BadRequestError('Recipient (PI Handle or Email) and amount are required');
+      throw new BadRequestError('Recipient and amount are required');
     }
 
-    const parsedAmount = parseInt(amount, 10); // amount in paise/cents
+    const parsedAmount = parseInt(amount, 10);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       throw new BadRequestError('Amount must be a positive number');
     }
 
-    if (parsedAmount > 10000000) { // $100,000 limit
-      throw new BadRequestError('Single PI transaction limit is $100,000');
+    if (parsedAmount > 10000000) {
+      throw new BadRequestError('Single transaction limit is $100,000');
     }
 
     const cleanRecipient = String(recipient).trim().toLowerCase();
@@ -173,7 +160,6 @@ router.post('/transfer', piLimiter, authenticateMerchant, async (req, res, next)
 
     await client.query('BEGIN');
 
-    // 1. Lock & check sender balance
     const senderRes = await client.query(
       'SELECT id, email, business_name, full_name, pi_handle, wallet_balance FROM merchants WHERE id = $1 FOR UPDATE',
       [req.merchant.id]
@@ -184,17 +170,15 @@ router.post('/transfer', piLimiter, authenticateMerchant, async (req, res, next)
 
     if (senderBalance < parsedAmount) {
       await client.query('ROLLBACK');
-      throw new BadRequestError(`Insufficient balance! Your current wallet balance is ${formatCurrency(senderBalance, 'USD')}`);
+      throw new BadRequestError(`Insufficient balance! Current wallet balance is ${formatCurrency(senderBalance, 'USD')}`);
     }
 
-    // 2. Find receiver by PI Handle or Email
     let receiverRes = await client.query(
       'SELECT id, email, business_name, full_name, pi_handle, wallet_balance FROM merchants WHERE LOWER(pi_handle) = $1 OR LOWER(email) = $1 FOR UPDATE',
       [cleanRecipient]
     );
 
     if (receiverRes.rows.length === 0) {
-      // Try searching without domain if recipient didn't include @
       const searchPiHandle = cleanRecipient.includes('@') ? cleanRecipient : `${cleanRecipient}@paycraft`;
       receiverRes = await client.query(
         'SELECT id, email, business_name, full_name, pi_handle, wallet_balance FROM merchants WHERE LOWER(pi_handle) = $1 OR LOWER(email) = $1 FOR UPDATE',
@@ -204,22 +188,21 @@ router.post('/transfer', piLimiter, authenticateMerchant, async (req, res, next)
 
     if (receiverRes.rows.length === 0) {
       await client.query('ROLLBACK');
-      throw new NotFoundError(`Recipient '${recipient}' not found on PayCraft PI network`);
+      throw new NotFoundError(`Recipient '${recipient}' not found`);
     }
 
     const receiver = receiverRes.rows[0];
 
     if (!receiver.pi_handle) {
       await client.query('ROLLBACK');
-      throw new BadRequestError(`Recipient '${recipient}' has no PI Handle set up. They must complete their PayCraft profile before receiving PI payments.`);
+      throw new BadRequestError(`Recipient '${recipient}' has no PI Handle set up.`);
     }
 
     if (receiver.id === sender.id) {
       await client.query('ROLLBACK');
-      throw new BadRequestError('Cannot transfer funds to your own PI address');
+      throw new BadRequestError('Cannot transfer funds to your own address');
     }
 
-    // 3. Deduct sender balance & credit receiver balance
     const newSenderBalance = senderBalance - parsedAmount;
     const receiverBalance = parseInt(receiver.wallet_balance || 0, 10);
     const newReceiverBalance = receiverBalance + parsedAmount;
@@ -234,7 +217,6 @@ router.post('/transfer', piLimiter, authenticateMerchant, async (req, res, next)
       [newReceiverBalance, receiver.id]
     );
 
-    // 4. Create Transaction Record
     const piRefId = generatePiRefId();
     const senderPiHandle = sender.pi_handle;
     const receiverPiHandle = receiver.pi_handle;
@@ -263,7 +245,6 @@ router.post('/transfer', piLimiter, authenticateMerchant, async (req, res, next)
 
     await client.query('COMMIT');
 
-    // Real-time push: notify the receiver (incoming credit) and the sender (outgoing debit).
     const txId = txResult.rows[0].id;
     eventBus.publish(receiver.id, 'payment.received', {
       direction: 'incoming',
@@ -317,9 +298,7 @@ router.post('/transfer', piLimiter, authenticateMerchant, async (req, res, next)
   }
 });
 
-/**
- * Top Up Wallet Balance (Instant PI Wallet Replenishment)
- */
+// Wallet top-up
 router.post('/topup', authenticateMerchant, async (req, res, next) => {
   try {
     const { amount } = req.body;
@@ -340,8 +319,6 @@ router.post('/topup', authenticateMerchant, async (req, res, next) => {
     const updated = result.rows[0];
     const piRefId = generatePiRefId();
 
-    // Record topup transaction — sender and receiver are the merchant themselves
-    // since PI top-ups are mint operations against the user's own wallet.
     const senderPiHandle = updated.pi_handle;
     await db.query(
       `INSERT INTO transactions (
@@ -351,7 +328,6 @@ router.post('/topup', authenticateMerchant, async (req, res, next) => {
       [req.merchant.id, senderPiHandle, piRefId, parsedAmount, updated.email, updated.full_name || updated.business_name]
     );
 
-    // Real-time push: notify the merchant of the top-up credit to their own wallet.
     eventBus.publish(req.merchant.id, 'wallet.topup', {
       direction: 'self',
       amount: parsedAmount,
